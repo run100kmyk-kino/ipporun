@@ -1,0 +1,178 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>いっぽラン v6.2 4週間継続テスト版</title><style>:root{font-family:system-ui,'Noto Sans JP',sans-serif;color:#17344e;background:#f3f8fb}*{box-sizing:border-box}body{margin:0}main{max-width:660px;margin:0 auto;padding:20px 16px 65px}.panel{background:white;border-radius:20px;padding:26px 22px;box-shadow:0 5px 22px #174d7415;margin-top:20px}h1{font-size:2rem;margin:8px 0;color:#1369a2}h2{font-size:1.45rem;line-height:1.5}p{line-height:1.8}.sub{color:#527084}.tag{display:inline-block;background:#e7f4fd;color:#14699c;border-radius:99px;padding:5px 12px;font-weight:700;font-size:.9rem}.btn{background:#147bb7;color:white;border:0;border-radius:13px;padding:15px 19px;font-size:1.05rem;font-weight:700;cursor:pointer;margin:7px 6px 0 0}.btn.secondary{background:#e8f3fa;color:#155f8d}.btn:focus-visible,.opt:focus-visible{outline:3px solid #f5a623}.opt{width:100%;text-align:left;display:block;background:#f5fafe;border:2px solid #c9e1f0;border-radius:14px;padding:15px;margin:10px 0;font-size:1.02rem;color:#17344e;cursor:pointer}.opt.sel{border-color:#1377b5;background:#e2f4ff;font-weight:700}.hint{font-size:.9rem;color:#5d7284}.error{color:#aa2626;font-weight:bold}ul{line-height:1.9;padding-left:23px}li{margin-bottom:7px}.step{background:#f3f9fd;border-radius:12px;padding:14px;margin:11px 0}.foot{font-size:.85rem;color:#617687}.bar{height:8px;background:#e0ecf5;border-radius:12px;overflow:hidden}.bar>div{height:100%;background:#1482bb}.type-list{display:grid;gap:9px;margin:14px 0 20px}.type-item{display:flex;align-items:center;gap:12px;border:1px solid #cbdce8;background:#f8fbfd;border-radius:12px;padding:12px}.type-item.current{background:#e6f4ff;border:2px solid #147bb7}.type-letter{min-width:38px;height:38px;display:grid;place-items:center;background:#e8f0f5;border-radius:9px;font-weight:800;color:#245675}.type-item.current .type-letter{background:#147bb7;color:white}.type-name{font-weight:700}.type-desc{font-size:.88rem;color:#526c80;line-height:1.5;margin-top:2px}.type-current{font-size:.8rem;font-weight:700;color:#116da5;margin-left:auto;white-space:nowrap}.saved-note{background:#eaf7ed;border:1px solid #b6ddc0;border-radius:12px;padding:12px;margin:14px 0;color:#245a36}.saved-note strong{display:block;margin-bottom:3px}.danger{background:#fff0ee!important;color:#a42e28!important}.save-actions{margin-top:16px}.small{font-size:.86rem}a{color:#116da5}form label{display:block;font-weight:650;margin:13px 0}form input,form select,form textarea{display:block;width:100%;font:inherit;margin-top:6px;padding:11px;border:1px solid #a5bac8;border-radius:9px;background:#fff} @media print{body{background:white}main{max-width:100%}.btn,.noprint{display:none!important}.panel{box-shadow:none;padding:0}} </style></head><body><main id="app"></main><script>
+const qs=[
+{key:'habit',title:'最近、歩いたり運動したりする機会はどのくらいありますか？',help:'今の習慣に近いものを選んでください',opts:[['none','ほとんどない'],['some','週1〜2日ほど歩く'],['often','週3日以上歩く']]},
+{key:'history',title:'これまでにランニングをした経験はありますか？',help:'経験がなくても大丈夫です',opts:[['never','ほとんどない'],['past','以前は走っていた'],['recent','最近も少し走っている']]},
+{key:'concern',title:'始めるうえで、いちばん気になることは何ですか？',help:'今の気持ちにいちばん近いものを選んでください',opts:[['fitness','体力に自信がない'],['joints','膝や足腰への負担'],['eyes','人目が気になる'],['start','何から始めればよいか分からない'],['continue','続けられるか心配']]},
+{key:'time',title:'1回の運動に、どのくらい時間を使えそうですか？',help:'使える時間です。最初からその時間すべて運動する必要はありません',opts:[['short','30分未満'],['medium','30分〜1時間未満'],['long','1時間以上']]},
+{key:'company',title:'どんな始め方が自分に合いそうですか？',help:'一人で始める選択も大切にします',opts:[['alone','一人で始めたい'],['together','家族や友人と始めたい'],['either','どちらでもよい']]},
+{key:'goal',title:'これから、どんなことを目指したいですか？',help:'今の希望を選んでください',opts:[['health','健康づくり'],['weight','体重管理'],['friends','仲間との交流'],['race','いつか大会に参加したい'],['walk','まずは歩く習慣をつけたい']]}
+];let state={page:'home',step:0,a:{},safety:null,plan:null};const root=document.getElementById('app');const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function render(){let h='';if(state.page==='home')h=`<div class="panel"><span class="tag">第6版 v6.2・4週間継続版</span><h1>いっぽラン</h1><h2>ランニング、最初の一歩を踏み出そう</h2><p>歩くことから始める、ミドル・シニアのランニング入門</p><p class="sub">ランニング、一人ひとりに合った最初の一歩を見つけ、継続して走る習慣につなげる</p><p>6つの質問に答えると、あなたに合った最初の2週間プランを提案し、4週間の習慣づくりを支援します。所要時間は約3〜5分です。<span class="small">プランはこの端末に保存できます。</span></p><button class="btn" onclick="go('safety')">はじめる</button><div id="saved-home">${savedHomeHtml()}</div>${readSaved()?`<button class="btn" onclick="go('tracker')">4週間の記録・振り返り</button>`:""}</div>`;
+if(state.page==='safety')h=`<div class="panel"><span class="tag">はじめる前の確認</span><h2>安全に始めるために</h2><p>医師から運動を控えるよう指示されていますか？ または、胸の痛み、強い息切れ、めまい、気になる症状がありますか？</p><button class="opt" onclick="safety('yes')">はい／判断に迷う</button><button class="opt" onclick="safety('no')">いいえ</button><p class="foot">これは医療診断ではありません。症状がある場合は運動を始めず医療機関へ相談してください。</p><button class="btn secondary" onclick="go('home')">ホームへ戻る</button></div>`;
+if(state.page==='stop')h=`<div class="panel"><h2>まずは安全を優先しましょう</h2><p>運動を控える指示や気になる症状がある場合、いっぽランは運動プランを提案しません。医師などの医療専門職に相談し、運動を始めてよいか確認してください。</p><button class="btn secondary" onclick="go('home')">ホームへ戻る</button></div>`;
+if(state.page==='questions'){let q=qs[state.step];h=`<div class="panel"><span class="tag">質問 ${state.step+1} / 6</span><div class="bar" style="margin:14px 0"><div style="width:${(state.step+1)/6*100}%"></div></div><h2>${q.title}</h2><p class="hint">${q.help}</p>${q.opts.map(([v,t])=>`<button class="opt ${state.a[q.key]===v?'sel':''}" onclick="answer('${q.key}','${v}')">${t}</button>`).join('')}<button class="btn secondary" onclick="back()">戻る</button><button class="btn secondary" onclick="go('home')">ホームへ戻る</button></div>`}
+if(state.page==='result'){let p=state.plan;h=`<div class="panel"><span class="tag">あなたの2週間プラン</span><h1>${esc(p.title)}</h1><p>${esc(p.message)}</p>${typeListHtml(p.type)}<h2>このプランを提案した理由</h2><p>${esc(p.reason)}</p><h2>1週目</h2><div class="step">${esc(p.week1)}</div><h2>2週目</h2><div class="step">${esc(p.week2)}</div><h2>最初のアクション</h2><div class="step">${esc(p.action)}</div><h2>続けるためのヒント</h2><ul>${p.tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ul><p class="foot">端末内の保存は、同じブラウザで開いた場合に利用できます。別の端末への同期はできません。ブラウザのデータ削除やファイルの開き方によって保存内容が失われる場合があります。大切なプランはテキスト保存もご利用ください。</p><p class="foot">体調に合わせて休みましょう。痛みやめまい、胸の痛みなどが出たら中止し、必要に応じて医療機関へ相談してください。これは一般的な初心者向けの提案で、医療上の安全を保証するものではありません。</p><div id="saved-result">${savedResultHtml()}</div><button class="btn" onclick="savePlan()">この端末に保存</button><button class="btn secondary" onclick="go('tracker')">運動の記録・4週間プラン</button><button class="btn secondary" onclick="downloadPlan()">テキスト保存</button><button class="btn secondary" onclick="copyPlan()">コピー</button><button class="btn secondary" onclick="window.print()">印刷・PDF保存</button><button class="btn secondary" onclick="go('home')">ホームへ戻る</button><p id="status" class="hint" aria-live="polite"></p></div>`}
+if(state.page==='tracker')h=trackerHtml();if(state.page==='review')h=reviewHtml();root.innerHTML=h}function go(p){state.page=p;render();scrollTo(0,0)}function safety(v){state.safety=v;if(v==='yes')go('stop');else{state.step=0;go('questions')}}function answer(k,v){state.a[k]=v;if(state.step<5){state.step++;render();scrollTo(0,0)}else{state.plan=build();go('result')}}function back(){if(state.step===0)go('safety');else{state.step--;render()}}
+const typeDefs=[
+ ['A','はじめの一歩','運動習慣がほとんどなく、これから始める人'],
+ ['B','走る準備','歩く習慣があり、少しずつ走りたい人'],
+ ['C','ランニング再開','以前走っていて、もう一度始めたい人'],
+ ['D','ランニング継続','最近も走っていて、習慣を続けたい人'],
+ ['E','ウォーキング','まずは歩く習慣を身につけたい人']
+];
+function typeListHtml(type){return `<section aria-label="5つのタイプ"><h2>あなたのタイプは？</h2><p class="hint">5つのタイプのうち、あなたの判定を青色で表示しています。</p><div class="type-list">${typeDefs.map(([id,name,desc])=>`<div class="type-item ${id===type?'current':''}" ${id===type?'aria-current="true"':''}><span class="type-letter">${id}</span><div><div class="type-name">${name}</div><div class="type-desc">${desc}</div></div>${id===type?'<span class="type-current">あなたのタイプ</span>':''}</div>`).join('')}</div><p class="hint">関節への不安や仲間との参加希望は、タイプとは別にプランを調整します。</p></section>`}
+function build(){
+ const a=state.a;
+ const walkOnly=a.goal==='walk';
+ const joint=a.concern==='joints';
+ // 使える時間は上限。長時間使えることを長時間運動の指示にはしない
+ const limit=a.time==='short'?20:a.time==='medium'?30:40;
+ let type, title, frequency, first, second, activity;
+ // 基本タイプは「歩行希望→走行経験→歩行習慣」の順で決定する。
+ // 不安・時間・仲間・目的（歩行希望以外）はタイプ分類に影響させない。
+ if(walkOnly){type='E';title='歩く習慣を育てるプラン';frequency=a.habit==='none'?2:3;first=a.habit==='none'?10:a.habit==='some'?15:20;second=a.habit==='none'?20:first+5;activity='歩行';}
+ else if(a.history==='recent'){type='D';title='今のランニングを続けるプラン';frequency=a.habit==='often'?3:2;first=a.habit==='often'?20:12;second=first+5;activity='歩行と、すでに無理なく行っている短いジョグ';}
+ else if(a.history==='past'){type='C';title='ランニング再開の準備プラン';frequency=a.habit==='often'?3:2;first=a.habit==='often'?20:12;second=first+5;activity='速歩き中心の歩行';}
+ else if(a.habit!=='none'){type='B';title='歩く習慣から走る準備へ';frequency=a.habit==='often'?3:2;first=a.habit==='often'?20:15;second=first+5;activity='速歩きを一部取り入れた歩行';}
+ else {type='A';title='ゆっくり始める入門プラン';frequency=2;first=10;second=20;activity='楽に会話できるペースの歩行';}
+ // 関節への不安がある場合は増量を自動的に指示しない。分類自体は維持する。
+ if(joint){second=first;}
+ first=Math.min(first,limit);second=Math.min(second,limit);
+ // 各週の合計時間に、開始時のゆっくり歩行と終了時のクールダウンを含める。
+ // 急に走ることを強制せず、経験者も現状を超える強度にしない。
+ function split(total){
+   const warm=Math.min(5,Math.max(3,Math.floor(total/4)));
+   const cool=Math.min(5,Math.max(3,Math.floor(total/4)));
+   return [warm,total-warm-cool,cool];
+ }
+ function detail(total,week){
+   const [warm,main,cool]=split(total);
+   let middle;
+   if(type==='A')middle=`少し速く歩く${main}分（会話できる速さ）`;
+   else if(type==='B')middle=`速歩きを交えたウォーキング${main}分（会話できる速さ。走る必要はありません）`;
+   else if(type==='C')middle=`無理のない速歩き${main}分（以前の走るペースを追わない）`;
+   else if(type==='D')middle=`慣れたペースの歩行と短いジョグ${main}分（走る部分は普段無理なくできる範囲。歩くだけでも可）`;
+   else middle=`気持ちよく歩く${main}分（走る必要はありません）`;
+   let note=joint?'膝や足腰に不安があるため、2週目も時間を増やしません。痛みがあるときは始めず、必要に応じて医療専門職へ相談してください。':week===2?'1週目を無理なく終えた場合の目安です。負担を感じたら1週目の時間に戻しましょう。':'疲れた日は短縮・休憩して構いません。';
+   return `週${frequency}回・1回${total}分（準備と整理を含む）。ゆっくり歩く${warm}分 → ${middle} → ゆっくり歩く${cool}分。${note}`;
+ }
+ let week1=detail(first,1),week2=detail(second,2);
+ let why=[a.habit==='none'?'運動習慣がほとんどない':a.habit==='some'?'週1〜2日の歩行習慣がある':'週3日以上の歩行習慣がある',a.history==='never'?'ランニング経験がほとんどない':a.history==='past'?'以前は走っていた':'最近も走っている',walkOnly?'まずは歩くことを目標にしている':a.goal==='health'?'健康づくりを目標にしている':a.goal==='weight'?'体重管理を目標にしている':a.goal==='friends'?'仲間との交流を目標にしている':'大会参加を将来の目標にしている',a.company==='alone'?'一人で始めたい':a.company==='together'?'仲間と始めたい':'一人でも仲間とでもよい'];
+ const timeLabel={short:'30分未満',medium:'30分〜1時間未満',long:'1時間以上'}[a.time]||'未回答';
+ const reason=`${why.join('／')}という回答を踏まえ、タイプ${type}を提案しました。使える時間は「${timeLabel}」ですが、最初から全時間を運動に使う必要はありません。`;
+ const actions={
+  alone:'次に歩く日を一つ決め、明るく平坦な道を10分程度下見してみよう。',
+  together:'家族や友人に「今週、一緒に少し歩かない？」と一度だけ声をかけてみよう。',
+  either:'次に歩く日を一つ決めよう。仲間と歩きたければ自治体の初心者向け活動も調べてみよう。'
+ };
+ let action=actions[a.company];
+ if(a.concern==='joints')action='まず膝や足腰の状態を確かめよう。痛みがあるときは運動を始めず、医療専門職に相談しよう。';
+ else if(a.concern==='eyes'&&a.company!=='together')action='人目が気になりにくい、歩き慣れた道と時間帯を一つ決めよう。';
+ else if(a.concern==='continue')action='カレンダーに今週の運動日を一つ書き込み、終わったら印をつけよう。';
+ let tips=['実施日・時間・体調をメモし、2週間後に振り返る'];
+ if(a.concern==='fitness')tips.unshift('会話できる楽な強さで、疲れたら休む');
+ if(a.concern==='joints')tips.unshift('痛みがある場合は運動を控え、医療専門職へ相談する');
+ if(a.goal==='friends')tips.unshift('仲間を探すなら自治体の広報やスポーツセンターの初心者向け活動を確認する');
+ if(a.goal==='race')tips.unshift('大会参加は先の目標にして、まず2週間の継続を確かめる');
+ if(a.goal==='weight')tips.unshift('体重変化を急がず、運動できた日を記録する');
+ const typeMsg={
+ A:'まずは10分。走らなくても大丈夫。歩く習慣から始めよう！',
+ B:'歩く習慣はもうあるね。速歩きを取り入れ、走る準備を少しずつ進めよう！',
+ C:'昔のペースを追いかけなくていいよ。今の身体に合う再スタートにしよう！',
+ D:'今ある走る習慣を大切に。距離より気持ちよく終えることを目指そう！',
+ E:'走ることを急がなくていいよ。ウォーキングも立派な第一歩！'
+ };
+ const concernMsg={
+ fitness:'体力が心配なら、会話できる楽な速さで十分だよ。',
+ joints:'膝や足腰が気になるね。痛みがあるときは無理せず、専門家に相談しよう。',
+ eyes:'人目を気にせず、自分が落ち着ける道を選ぼう。',
+ start:'最初の一歩は、歩く日と場所を決めることから。',
+ continue:'続けるコツは、休む日も予定に入れることだよ。'
+ };
+ const goalMsg={
+ health:'健康づくりは、無理なく続けることが大切だね。',
+ weight:'体重の数字だけでなく、動けた日を増やしていこう。',
+ friends:'仲間との交流も楽しみだね。自分の希望に合う場を探そう。',
+ race:'大会は先の楽しみに。まず2週間の習慣づくりから。',
+ walk:'まず歩くことを楽しもう。走らなくてもいいんだよ。'
+ };
+ let message=[typeMsg[type],concernMsg[a.concern],goalMsg[a.goal]].join(' ');
+ return {type,title,message,reason,week1,week2,action,tips};
+}
+function planText(){let p=state.plan;return `いっぽラン｜${p.title}\n\n${p.message}\n\n提案理由：${p.reason}\n\n1週目：${p.week1}\n2週目：${p.week2}\n\n最初のアクション：${p.action}\n\n続けるためのヒント\n${p.tips.map(x=>'・'+x).join('\n')}\n\n体調に応じて休み、痛みや異常があれば運動を中止してください。`}function status(t){let e=document.getElementById('status');if(e)e.textContent=t}const STORAGE_KEY='ipporun_v6_saved_plan';const LOG_KEY='ipporun_v62_log';const NEXT_KEY='ipporun_v62_next';
+function readSaved(){
+ try{
+  let s=localStorage.getItem(STORAGE_KEY);
+  if(s){let obj=JSON.parse(s);if(obj&&obj.plan&&typeof obj.plan.type==='string'&&obj.plan.week1&&obj.plan.week2)return obj;}
+  // v5.5からの引き継ぎ。古いデータは削除しない。
+  let old=localStorage.getItem('ipporun_v5_plan');
+  if(old){let plan=JSON.parse(old);if(plan&&plan.type&&plan.week1&&plan.week2)return {plan,savedAt:null,legacy:true};}
+ }catch(e){}return null;
+}
+function savedHomeHtml(){
+ const saved=readSaved();
+ if(!saved)return '<p class="hint">保存したプランはまだありません。6つの質問から始めましょう。</p>';
+ const date=saved.savedAt?new Date(saved.savedAt).toLocaleDateString('ja-JP'):'以前の版で保存';
+ return `<div class="saved-note"><strong>保存済み：タイプ${esc(saved.plan.type)}｜${esc(saved.plan.title)}</strong><span class="small">保存日：${esc(date)}　この端末・このブラウザ内に保存</span></div><button class="btn secondary" onclick="loadPlan()">保存したプランを見る</button><button class="btn secondary danger" onclick="deletePlan()">保存したプランを削除</button>`;
+}
+function savedResultHtml(){
+ const saved=readSaved();
+ if(!saved)return '<p class="hint">このプランはまだ保存されていません。</p>';
+ return `<div class="saved-note"><strong>この端末に保存済みのプランがあります</strong><span class="small">タイプ${esc(saved.plan.type)}・${esc(saved.plan.title)}。新たに保存すると、以前の保存内容を置き換えます。</span></div>`;
+}
+function savePlan(){
+ try{
+  if(!state.plan||!state.plan.type)throw Error('plan missing');
+  let existing=readSaved();
+  if(existing&&!confirm('保存済みのプランを、新しいプランで上書きしますか？')){status('保存を取り消しました。');return;}
+  const saved={version:6,plan:state.plan,savedAt:new Date().toISOString()};
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(saved));
+  if(!readSaved()||readSaved().plan.title!==state.plan.title)throw Error('verify failed');
+  if(existing && existing.plan && existing.plan.type!==state.plan.type){localStorage.removeItem(LOG_KEY);localStorage.removeItem(NEXT_KEY);}render();status('保存しました。ホーム画面から再表示できます。');
+ }catch(e){status('端末への保存ができませんでした。テキスト保存をご利用ください。');}
+}
+function loadPlan(){
+ const saved=readSaved();
+ if(!saved){alert('保存されたプランはありません。');return;}
+ state.plan=saved.plan;go('result');
+ status('保存したプランを開きました。');
+}
+function deletePlan(){
+ const saved=readSaved();if(!saved){alert('保存されたプランはありません。');return;}
+ if(!confirm('保存したプランを削除しますか？ この操作は取り消せません。'))return;
+ try{
+  localStorage.removeItem(STORAGE_KEY);
+  // 古いデータも残ると再表示されるため、削除時のみ一緒に削除
+  localStorage.removeItem('ipporun_v5_plan');localStorage.removeItem(LOG_KEY);localStorage.removeItem(NEXT_KEY);
+  render();
+ }catch(e){alert('保存データを削除できませんでした。');}
+}
+function downloadPlan(){let blob=new Blob([planText()],{type:'text/plain;charset=utf-8'});let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='いっぽラン_2週間プラン.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('テキストファイルを保存しました。')}async function copyPlan(){try{await navigator.clipboard.writeText(planText());status('プランをコピーしました。メールなどに貼り付けられます。')}catch(e){status('コピーできませんでした。テキスト保存をご利用ください。')}}
+// v6.2: 4-week plan & logging. All data stays on this browser.
+function getLogs(){try{const a=JSON.parse(localStorage.getItem(LOG_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&typeof x.date==='string'&&Number.isFinite(x.minutes)):[];}catch(e){return [];}}
+function getNext(){try{const a=JSON.parse(localStorage.getItem(NEXT_KEY)||'null');return a&&typeof a==='object'?a:null;}catch(e){return null;}}
+function safeDate(s){return /^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(new Date(s+'T12:00:00').getTime());}
+function localDay(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
+function planFreq(s){const m=String(s||'').match(/週(\d+)回/);return m?Number(m[1]):2;}
+function planMins(s){const m=String(s||'').match(/1回(\d+)分/);return m?Number(m[1]):10;}
+function startDay(){const saved=readSaved();if(saved?.savedAt)return saved.savedAt.slice(0,10);const l=getLogs();return l.length?l.map(x=>x.date).sort()[0]:localDay();}
+function weekFor(date,start){return Math.floor((new Date(date+'T12:00:00')-new Date(start+'T12:00:00'))/86400000/7)+1;}
+function countWeeks(logs,start,min,max){return logs.filter(x=>weekFor(x.date,start)>=min&&weekFor(x.date,start)<=max).length;}
+function logItemHtml(x){return `<div class="step"><strong>${esc(x.date)}　${x.minutes}分</strong>｜${esc(x.feeling)}${x.note?`<p class="small">${esc(x.note)}</p>`:''}<div><button class="btn secondary small" onclick="editLog('${esc(x.id)}')">修正</button><button class="btn secondary danger small" onclick="removeLog('${esc(x.id)}')">削除</button></div></div>`;}
+function trackerHtml(){const saved=readSaved();if(!saved)return `<div class="panel"><h2>まずプランを保存してください</h2><button class="btn secondary" onclick="go('home')">ホームへ戻る</button></div>`;
+const logs=getLogs(),start=startDay(),next=getNext(),target=planFreq(saved.plan.week1)*2,first=countWeeks(logs,start,1,2),last=countWeeks(logs,start,3,4);
+return `<div class="panel"><span class="tag">4週間の習慣づくり</span><h1>運動の記録</h1><p>タイプ${esc(saved.plan.type)}｜${esc(saved.plan.title)}</p><p class="hint">開始日：${esc(start)}（保存日を基準）　※開始日を変えたい場合はプランを保存し直してください。</p><div class="step"><strong>1〜2週目：${first} / ${target}回</strong><p>3〜4週目：${last}回${next?' / '+(next.frequency*2)+'回':''}</p><p>4週間合計：${logs.length}回・${logs.reduce((n,x)=>n+x.minutes,0)}分</p></div>
+<h2>1回の運動を記録する</h2><form id="log-form" onsubmit="saveLog(event)"><input type="hidden" id="log-id" value=""><label>実施日 <input id="log-date" type="date" value="${localDay()}" required></label><label>運動時間（分） <input id="log-minutes" type="number" min="1" max="300" value="10" required></label><label>運動後の体調 <select id="log-feeling" required><option value="良い">良い</option><option value="普通">普通</option><option value="つらい">つらい</option><option value="痛みあり">痛みあり</option></select></label><label>ひとこと（任意）<textarea id="log-note" maxlength="200" rows="2" placeholder="気持ちよく歩けた、など"></textarea></label><button class="btn" type="submit">記録を保存</button><button class="btn secondary" type="button" onclick="clearLogForm()">入力を戻す</button></form>
+<h2>2週間後の振り返り</h2><p class="hint">2週間の記録を確認し、体調と希望を入力して次のプランを決めます。痛みがある場合は増量しません。</p><button class="btn" onclick="go('review')">次の2週間プランを確認</button>
+${next?`<div class="step"><strong>3〜4週目：${esc(next.label)}</strong><p>${next.safety?'運動量を増やさず、医療専門職に相談してください。':`週${next.frequency}回・1回${next.minutes}分｜${esc(next.activity)}`}</p><p>${esc(next.message)}</p></div>`:''}
+<h2>これまでの記録</h2>${logs.length?logs.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(logItemHtml).join(''):'<p class="hint">まだ記録はありません。</p>'}<button class="btn secondary" onclick="go('home')">ホームへ戻る</button></div>`;}
+function clearLogForm(){document.getElementById('log-form').reset();document.getElementById('log-id').value='';document.getElementById('log-date').value=localDay();}
+function saveLog(ev){ev.preventDefault();const date=document.getElementById('log-date').value,minutes=Number(document.getElementById('log-minutes').value),feeling=document.getElementById('log-feeling').value,note=document.getElementById('log-note').value.trim(),id=document.getElementById('log-id').value;
+if(!safeDate(date)||!Number.isInteger(minutes)||minutes<1||minutes>300||!['良い','普通','つらい','痛みあり'].includes(feeling)){alert('実施日・時間・体調を確認してください。');return;}
+try{let logs=getLogs();const record={id:id||('l'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),date,minutes,feeling,note};const index=logs.findIndex(x=>x.id===id);if(index>=0)logs[index]=record;else logs.push(record);localStorage.setItem(LOG_KEY,JSON.stringify(logs));render();alert('運動を記録しました。');}catch(e){alert('保存できませんでした。ブラウザの保存設定をご確認ください。');}}
+function editLog(id){const x=getLogs().find(x=>x.id===id);if(!x)return;document.getElementById('log-id').value=x.id;document.getElementById('log-date').value=x.date;document.getElementById('log-minutes').value=x.minutes;document.getElementById('log-feeling').value=x.feeling;document.getElementById('log-note').value=x.note||'';document.getElementById('log-form').scrollIntoView({behavior:'smooth'});}
+function removeLog(id){if(!confirm('この運動記録を削除しますか？'))return;try{localStorage.setItem(LOG_KEY,JSON.stringify(getLogs().filter(x=>x.id!==id)));render();}catch(e){alert('削除できませんでした。');}}
+function reviewHtml(){const saved=readSaved();if(!saved)return `<div class="panel"><p>プランがありません。</p><button class="btn" onclick="go('home')">ホームへ戻る</button></div>`;const logs=getLogs(),start=startDay(),target=planFreq(saved.plan.week1)*2,done=countWeeks(logs,start,1,2),pain=logs.some(x=>weekFor(x.date,start)>=1&&weekFor(x.date,start)<=2&&x.feeling==='痛みあり');return `<div class="panel"><span class="tag">2週間後の振り返り</span><h1>次の一歩を決めよう</h1><div class="step"><strong>1〜2週目の記録：${done} / ${target}回</strong><p class="hint">記録を忘れた日があれば先に追加してください。</p>${pain?'<p class="error">痛みの記録があります。増量は提案しません。</p>':''}</div><form onsubmit="makeNext(event)"><label>運動中・運動後の状態 <select id="review-feeling"><option value="good">問題なくできた</option><option value="tired">疲れや負担が大きかった</option><option value="pain" ${pain?'selected':''}>痛みが出た・悪化した</option></select></label><label>次の2週間への希望 <select id="review-wish"><option value="increase">少し増やしてみたい</option><option value="maintain">今のペースで続けたい</option></select></label><button class="btn" type="submit">3〜4週目のプランを作る</button></form><p class="hint">運動の記録がなくても提案はできますが、実績がない場合は増量しません。体調が不安な場合は医療専門職へ相談してください。</p><button class="btn secondary" onclick="go('tracker')">記録へ戻る</button></div>`;}
+function decideNext({done,target,feeling,wish,base,freq,activity,painLog}){let mode;if(feeling==='pain'||painLog)mode='safety';else if(feeling==='tired')mode='reduce';else if(done>=Math.ceil(target*.75)&&wish==='increase')mode='increase';else mode='repeat';const labels={safety:'安全を優先',reduce:'負担を減らす',repeat:'同じペース',increase:'少し進む'};return {mode,label:labels[mode],safety:mode==='safety',frequency:freq,minutes:mode==='increase'?base+5:mode==='reduce'?Math.max(10,base-5):base,activity,message:mode==='safety'?'痛みがあるときは運動を控え、医療専門職に相談してください。':mode==='increase'?'無理なく続けられたね。次は少しだけ時間を増やしてみよう。':mode==='reduce'?'負担が大きかったね。時間を減らして、休みながら続けよう。':'今のペースで十分。続けられることを大切にしよう。'};}
+function makeNext(ev){ev.preventDefault();const saved=readSaved();if(!saved)return;const logs=getLogs(),start=startDay(),target=planFreq(saved.plan.week1)*2,done=countWeeks(logs,start,1,2),feeling=document.getElementById('review-feeling').value,wish=document.getElementById('review-wish').value,painLog=logs.some(x=>weekFor(x.date,start)>=1&&weekFor(x.date,start)<=2&&x.feeling==='痛みあり');const p=saved.plan;const result=decideNext({done,target,feeling,wish,base:planMins(p.week2),freq:planFreq(p.week2),activity:p.type==='E'?'ウォーキング':p.type==='D'?'慣れたペースの歩行と短いジョグ':'会話できる速さのウォーキング',painLog});try{localStorage.setItem(NEXT_KEY,JSON.stringify({...result,createdAt:new Date().toISOString()}));go('tracker');}catch(e){alert('次のプランを保存できませんでした。');}}
+
+render();</script></body></html>
