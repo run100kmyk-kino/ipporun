@@ -149,7 +149,15 @@ function deletePlan(){
 function downloadPlan(){let blob=new Blob([planText()],{type:'text/plain;charset=utf-8'});let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='いっぽラン_2週間プラン.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('テキストファイルを保存しました。')}async function copyPlan(){try{await navigator.clipboard.writeText(planText());status('プランをコピーしました。メールなどに貼り付けられます。')}catch(e){status('コピーできませんでした。テキスト保存をご利用ください。')}}
 // v6.2: 4-week plan & logging. All data stays on this browser.
 function getLogs(){try{const a=JSON.parse(localStorage.getItem(LOG_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&typeof x.date==='string'&&Number.isFinite(x.minutes)):[];}catch(e){return [];}}
-function getNext(){try{const a=JSON.parse(localStorage.getItem(NEXT_KEY)||'null');return a&&typeof a==='object'&&(a.safety||!hasPainLogs())?a:null;}catch(e){return null;}}
+function getNext(){
+ try{
+  const next=JSON.parse(localStorage.getItem(NEXT_KEY)||'null');
+  if(!next||typeof next!=='object')return null;
+  if(!Number.isSafeInteger(next.frequency)||next.frequency<1||
+     !Number.isSafeInteger(next.minutes)||next.minutes<1)return null;
+  return next.safety||!hasPainLogs()?next:null;
+ }catch(e){return null;}
+}
 function safeDate(s){return /^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(new Date(s+'T12:00:00').getTime());}
 function localDay(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function planFreq(s){const m=String(s||'').match(/週(\d+)回/);return m?Number(m[1]):2;}
@@ -158,7 +166,7 @@ function startDay(){const saved=readSaved();if(saved?.savedAt)return saved.saved
 function weekFor(date,start){return Math.floor((new Date(date+'T12:00:00')-new Date(start+'T12:00:00'))/86400000/7)+1;}
 function countWeeks(logs,start,min,max){return logs.filter(x=>weekFor(x.date,start)>=min&&weekFor(x.date,start)<=max).length;}
 function hasPainLogs(logs=getLogs(),start=startDay()){return logs.some(x=>weekFor(x.date,start)>=1&&weekFor(x.date,start)<=4&&x.feeling==='痛みあり');}
-function logItemHtml(x){return `<div class="step"><strong>${esc(x.date)}　${x.minutes}分</strong>｜${esc(x.feeling)}${x.note?`<p class="small">${esc(x.note)}</p>`:''}<div><button class="btn secondary small" onclick="editLog('${esc(x.id)}')">修正</button><button class="btn secondary danger small" onclick="removeLog('${esc(x.id)}')">削除</button></div></div>`;}
+function logItemHtml(x){return `<div class="step"><strong>${esc(x.date)}　${x.minutes}分</strong>｜${esc(x.feeling)}${x.note?`<p class="small">${esc(x.note)}</p>`:''}<div><button class="btn secondary small" data-log-id="${esc(x.id)}" onclick="editLog(this.dataset.logId)">修正</button><button class="btn secondary danger small" data-log-id="${esc(x.id)}" onclick="removeLog(this.dataset.logId)">削除</button></div></div>`;}
 function trackerHtml(){const saved=readSaved();if(!saved)return `<div class="panel"><h2>まずプランを保存してください</h2><button class="btn secondary" onclick="go('home')">ホームへ戻る</button></div>`;
 const logs=getLogs(),start=startDay(),next=getNext(),currentLogs=logs.filter(x=>weekFor(x.date,start)>=1&&weekFor(x.date,start)<=4),target=planFreq(saved.plan.week1)*2,first=countWeeks(logs,start,1,2),last=countWeeks(logs,start,3,4);
 return `<div class="panel"><span class="tag">4週間の習慣づくり</span><h1>運動の記録</h1><p>タイプ${esc(saved.plan.type)}｜${esc(saved.plan.title)}</p><p class="hint">開始日：${esc(start)}（保存日を基準）　※開始日を変えたい場合はプランを保存し直してください。</p><div class="step"><strong>1〜2週目：${first} / ${target}回</strong><p>3〜4週目：${last}回${next?' / '+(next.frequency*2)+'回':''}</p><p>4週間合計：${currentLogs.length}回・${currentLogs.reduce((n,x)=>n+x.minutes,0)}分</p></div>
