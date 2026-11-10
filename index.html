@@ -138,7 +138,7 @@ function loadPlan(){
 }
 function deletePlan(){
  const saved=readSaved();if(!saved){alert('保存されたプランはありません。');return;}
- if(!confirm('保存したプランを削除しますか？ この操作は取り消せません。'))return;
+ if(!confirm('保存したプラン、これまでの運動記録、次期プランをまとめて削除しますか？ 削除したデータは元に戻せません。'))return;
  try{
   localStorage.removeItem(STORAGE_KEY);
   // 古いデータも残ると再表示されるため、削除時のみ一緒に削除
